@@ -1,29 +1,47 @@
-#include <SDL3/SDL.h>
+#include "game.h"
 #include <SDL3/SDL_keyboard.h>
-#include <SDL3/SDL_render.h>
 #include <math.h>
-#include <stdbool.h>
 #define mapWidth 32
 #define mapHeight 70
-#define tileSize 20
-#define PI 3.14159265
-#define deg 0.0174533
+
+const float PI = 3.14159265;
+const float deg = 0.0174533;
+const int tileSize = 20;
+int rays = 400;
+float baseSpeed = 100;
+float baseRotationSpeed = 2;
 
 float px = tileSize * 1.5, py = tileSize * 1.5, pa = 0;
-int rays = 500;
-float speed = 0.1, rotationSpeed = 0.002;
 
 // clang-format off
 int map[mapHeight][mapWidth] = {
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 1, 1, 1, 1, 1, 1, 1, 1,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1},
-    {1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1},
+    {1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 1},
+    {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 2, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
+    {1, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
+    {1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
+    {1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
+    {1, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
+    {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
+    {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 1},
-    {1, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
     {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
@@ -54,39 +72,23 @@ int map[mapHeight][mapWidth] = {
     {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
     {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
-    {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
-    {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
-    {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
-    {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1},
-    {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
+    {1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1},
+    {9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 };
 // clang-format on
+
+int portal8X, portal8Y, portal9X, portal9Y;
 
 int getMapTile(int x, int y) {
 
@@ -104,6 +106,21 @@ int getMapTile(int x, int y) {
   }
 
   return map[y][x];
+}
+
+void initGame() {
+  for (int y = 0; y < mapHeight; y++) {
+    for (int x = 0; x < mapWidth; x++) {
+      if (getMapTile(x, y) == 8) {
+        portal8X = x;
+        portal8Y = y;
+      }
+      if (getMapTile(x, y) == 9) {
+        portal9X = x;
+        portal9Y = y;
+      }
+    }
+  }
 }
 
 bool isWall(int tile) { return tile == 1 || tile == 2; }
@@ -139,103 +156,60 @@ void renderPlayer(SDL_Renderer *renderer) {
   SDL_RenderFillRect(renderer, &rect);
 }
 
-void renderRays(SDL_Renderer *renderer) {
-  for (int i = -(rays / 2); i < (rays / 2); i++) {
-    float angle = pa + (i * (deg / 10));
+void calculatePlayerCollisions(float nextX, float nextY) {
+  int nextXTile = getMapTile((int)(nextX / tileSize), (int)(py / tileSize));
+  int nextYTile = getMapTile((int)(px / tileSize), (int)(nextY / tileSize));
+  int nextTile = getMapTile((int)(px / tileSize), (int)(py / tileSize));
 
-    float x1 = px, y1 = py;
-    float x2 = px, y2 = py;
-    int color1 = 0, color2 = 0;
+  if (!isWall(nextXTile)) {
+    px = nextX;
+  }
 
-    if (angle < 0)
-      angle += 2 * PI;
-    if (angle > 2 * PI)
-      angle -= +2 * PI;
+  if (!isWall(nextYTile)) {
+    py = nextY;
+  }
 
-    for (int i = 0; i < 15; i++) {
-      if (angle > PI / 2 && angle < 1.5 * PI) {
-        x1 = ((int)(x1 / tileSize)) * tileSize - 0.0003f;
-      } else {
-        x1 = ((int)(x1 / tileSize)) * tileSize + tileSize;
-      }
-      y1 = (tan(angle) * (x1 - px)) + py;
-      int tile = getMapTile((int)(x1 / tileSize), (int)(y1 / tileSize));
-      if (isWall(tile)) {
-        color1 = tile;
-        break;
-      }
-      if (i == 14) {
-        color1 = 99;
-      }
-    }
-
-    float rayTan = tanf(angle);
-    if (fabsf(rayTan) > 0.0001f) {
-      for (int i = 0; i < 15; i++) {
-        if (angle > PI && angle < 2 * PI) {
-          y2 = ((int)(y2 / tileSize)) * tileSize - 0.0003f;
-        } else {
-          y2 = ((int)(y2 / tileSize)) * tileSize + tileSize;
-        }
-        x2 = (y2 - py) / rayTan + px;
-        int tile = getMapTile((int)(x2 / tileSize), (int)(y2 / tileSize));
-        if (isWall(tile)) {
-          color2 = tile;
-          break;
-        }
-        if (i == 14) {
-          color2 = 99;
-        }
-      }
-    }
-
-    float size1 = INFINITY;
-    float size2 = INFINITY;
-    if (color1 != 0)
-      size1 = sqrt(pow(x1 - px, 2) + pow(y1 - py, 2)) * cos(angle - pa);
-    if (color2 != 0)
-      size2 = sqrt(pow(x2 - px, 2) + pow(y2 - py, 2)) * cos(angle - pa);
-
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    if (size1 < size2) {
-      SDL_RenderLine(renderer, px, py, x1, y1);
-    } else {
-      SDL_RenderLine(renderer, px, py, x2, y2);
-    }
+  if (nextTile == 8) {
+    px = (portal9X * tileSize + tileSize) + fmod(px, tileSize);
+    py = (portal9Y * tileSize) + fmod(py, tileSize);
+  } else if (nextTile == 9) {
+    px = (portal8X * tileSize - tileSize) + fmod(px, tileSize);
+    py = (portal8Y * tileSize) + fmod(py, tileSize);
   }
 }
 
 void movePlayer() {
   const bool *keyStates = SDL_GetKeyboardState(NULL);
+  float speed = baseSpeed * dt;
+  float rotationSpeed = baseRotationSpeed * dt;
 
+  // TODO: Make speed normal if going sideways and forward
   if (keyStates[SDL_SCANCODE_W]) {
     float nextX = px + cos(pa) * speed;
     float nextY = py + sin(pa) * speed;
-
-    if (!getMapTile((int)(nextX / tileSize), (int)(py / tileSize))) {
-      px = nextX;
-    }
-
-    if (!getMapTile((int)(px / tileSize), (int)(nextY / tileSize))) {
-      py = nextY;
-    }
+    calculatePlayerCollisions(nextX, nextY);
   }
   if (keyStates[SDL_SCANCODE_S]) {
     float nextX = px + cos(pa) * -speed;
     float nextY = py + sin(pa) * -speed;
-
-    if (!getMapTile((int)(nextX / tileSize), (int)(py / tileSize))) {
-      px = nextX;
-    }
-
-    if (!getMapTile((int)(px / tileSize), (int)(nextY / tileSize))) {
-      py = nextY;
-    }
+    calculatePlayerCollisions(nextX, nextY);
   }
   if (keyStates[SDL_SCANCODE_A]) {
-    pa -= rotationSpeed;
+    float virtualAngle = pa + 90 * deg;
+    float nextX = px + cos(virtualAngle) * -speed;
+    float nextY = py + sin(virtualAngle) * -speed;
+    calculatePlayerCollisions(nextX, nextY);
   }
   if (keyStates[SDL_SCANCODE_D]) {
+    float virtualAngle = pa - 90 * deg;
+    float nextX = px + cos(virtualAngle) * -speed;
+    float nextY = py + sin(virtualAngle) * -speed;
+    calculatePlayerCollisions(nextX, nextY);
+  }
+  if (keyStates[SDL_SCANCODE_LEFT]) {
+    pa -= rotationSpeed;
+  }
+  if (keyStates[SDL_SCANCODE_RIGHT]) {
     pa += rotationSpeed;
   }
 
@@ -245,10 +219,21 @@ void movePlayer() {
     pa -= +2 * PI;
 }
 
+void renderBackground(SDL_Renderer *renderer) {
+  int halfHeight = windowHeight / 2;
+  SDL_SetRenderDrawColor(renderer, 255, 255, 240, 255);
+  SDL_FRect rect1 = {0, 0, windowWidth, halfHeight};
+  SDL_RenderFillRect(renderer, &rect1);
+
+  SDL_SetRenderDrawColor(renderer, 120, 103, 31, 255);
+  SDL_FRect rect2 = {0, halfHeight, windowWidth, windowHeight};
+  SDL_RenderFillRect(renderer, &rect2);
+}
+
 void renderGame(SDL_Renderer *renderer) {
   movePlayer();
-
-  renderMap(renderer);
-  renderRays(renderer);
-  renderPlayer(renderer);
+  renderBackground(renderer);
+  // renderMap(renderer);
+  renderWalls(renderer);
+  // renderPlayer(renderer);
 }
