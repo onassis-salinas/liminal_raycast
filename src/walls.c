@@ -1,4 +1,5 @@
 #include "game.h"
+#include <SDL3/SDL_render.h>
 #include <math.h>
 
 void renderWalls(SDL_Renderer *renderer) {
@@ -95,22 +96,27 @@ void renderWalls(SDL_Renderer *renderer) {
     float collisionX, collisionY;
     float shade;
     float distance = fmin(size1, size2);
+    int texX;
 
     if (size1 < size2) {
       collisionX = x1, collisionY = y1;
+
+      texX = fmod(collisionY, tileSize) * ((float)textureSize / tileSize);
     } else {
       collisionX = x2, collisionY = y2;
+      texX = fmod(collisionX, tileSize) * ((float)textureSize / tileSize);
     }
 
     shade = 1 - fmin(distance / 250, 1.0f);
-    wallHeight = windowHeight / (fmax(distance, 30) / 30);
+    wallHeight = windowHeight / (fmax(distance, 0.01f) / 30);
+
     float width = (float)windowWidth / rays;
     float positionX = (i + (rays / 2.0)) * width;
     float positionY = (windowHeight - wallHeight) / 2;
 
-    SDL_SetRenderDrawColor(renderer, 245 * shade, 218 * shade, 137 * shade,
-                           255);
-    SDL_FRect rect = {positionX, positionY, width, wallHeight};
-    SDL_RenderFillRect(renderer, &rect);
+    SDL_FRect destination = {positionX, positionY, width, wallHeight};
+    SDL_FRect source = {texX, 0, 1, 64};
+    SDL_SetTextureColorModFloat(wallTexture, shade, shade, shade);
+    SDL_RenderTexture(renderer, wallTexture, &source, &destination);
   }
 }

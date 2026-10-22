@@ -4,7 +4,7 @@ project(liminal_raycast C)
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-add_executable(game WIN32 src/main.c src/render.c src/walls.c)
+add_executable(game WIN32 src/main.c src/render.c src/walls.c src/maps.c src/textures.c)
 
 if(EMSCRIPTEN)
   set_target_properties(game PROPERTIES SUFFIX ".html")
