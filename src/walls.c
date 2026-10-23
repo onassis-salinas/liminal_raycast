@@ -2,6 +2,7 @@
 #include <SDL3/SDL_render.h>
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 void renderWalls(SDL_Renderer *renderer) {
   for (int i = -(rays / 2); i < (rays / 2); i++) {
@@ -122,7 +123,34 @@ void renderWalls(SDL_Renderer *renderer) {
   }
 }
 
+static uint32_t *pixels;
+static SDL_Texture *texture;
+
+static int pixelsWidth = 0;
+static int pixelsHeight = 0;
+
 void renderFloorAndCeiling(SDL_Renderer *renderer) {
+  if (pixelsWidth != windowWidth || pixelsHeight != windowHeight) {
+    if (pixels) {
+      free(pixels);
+    }
+    if (texture) {
+      SDL_DestroyTexture(texture);
+    }
+
+    pixels = malloc((size_t)windowWidth * windowHeight * sizeof(uint32_t));
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                                SDL_TEXTUREACCESS_STREAMING, windowWidth,
+                                windowHeight);
+
+    if (!pixels || !texture) {
+      return;
+    }
+
+    pixelsWidth = windowWidth;
+    pixelsHeight = windowHeight;
+  }
+
   for (int y = 0; y < windowHeight; y++) {
     float dirX = cosf(pa);
     float dirY = sinf(pa);
@@ -170,28 +198,30 @@ void renderFloorAndCeiling(SDL_Renderer *renderer) {
       int floorTexture = 3;
       int ceilingTexture = 6;
 
-      int r, g, b;
+      uint32_t r, g, b, a = 255;
 
       if (y > windowHeight / 2) {
         int color = floorTextureColors[ty][tx];
         if (color == 1) {
-          r = 148 * shade, g = 138 * shade, b = 78 * shade;
+          r = 152 * shade, g = 130 * shade, b = 76 * shade;
         } else if (color == 2) {
-          r = 132 * shade, g = 122 * shade, b = 66 * shade;
+          r = 136 * shade, g = 114 * shade, b = 64 * shade;
         } else if (color == 3) {
-          r = 164 * shade, g = 152 * shade, b = 86 * shade;
+          r = 168 * shade, g = 144 * shade, b = 84 * shade;
         }
       } else {
         int color = ceilingTextureColors[ty][tx];
         if (color == 1) {
-          r = 209 * shade, g = 208 * shade, b = 114 * shade;
+          r = 212 * shade, g = 210 * shade, b = 140 * shade;
         } else if (color == 2) {
-          r = 192 * shade, g = 191 * shade, b = 107 * shade;
+          r = 196 * shade, g = 194 * shade, b = 132 * shade;
         }
       }
 
-      SDL_SetRenderDrawColor(renderer, r, g, b, 255);
-      SDL_RenderPoint(renderer, x, y);
+      pixels[y * windowWidth + x] = ((r << 24) | (g << 16) | (b << 8) | a);
     }
   }
+
+  SDL_UpdateTexture(texture, NULL, pixels, windowWidth * sizeof(uint32_t));
+  SDL_RenderTexture(renderer, texture, NULL, NULL);
 }
