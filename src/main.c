@@ -8,13 +8,10 @@
 
 // TODO
 // Mouse movement for camera
-// Moving camera up and dow with mouse
+// Moving camera up and down with mouse
 // Moving camera up and down when walking
-// Render floor
-// Render roof
 // Improve map
 // Add shaders for visual effects
-// Improve fov and window resizing
 
 int windowWidth, windowHeight;
 float dt;

@@ -6,7 +6,7 @@
 
 void renderWalls(SDL_Renderer *renderer) {
   for (int i = -(rays / 2); i < (rays / 2); i++) {
-    float angle = pa + (i * (deg / 10));
+    float angle = pa + (i * (FOV / rays));
 
     if (angle < 0)
       angle += 2 * PI;
@@ -155,7 +155,7 @@ void renderFloorAndCeiling(SDL_Renderer *renderer) {
     float dirX = cosf(pa);
     float dirY = sinf(pa);
 
-    float halfFov = (rays / 2.0f) * (deg / 10.0f);
+    float halfFov = FOV / 2;
     float planeScale = tanf(halfFov);
     float planeX = -dirY * planeScale;
     float planeY = dirX * planeScale;

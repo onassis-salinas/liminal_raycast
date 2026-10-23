@@ -10,6 +10,7 @@
 
 extern const float PI;
 extern const float deg;
+extern const float FOV;
 extern const int tileSize;
 extern int rays;
 extern float px, py, pa;
