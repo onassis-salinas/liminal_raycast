@@ -6,7 +6,8 @@ const float PI = 3.14159265;
 const float deg = 0.0174533;
 const float FOV = 1.3962634;
 const int tileSize = 20;
-int rays = 350;
+int rays = 400;
+int rows = 200;
 float baseSpeed = 100;
 float baseRotationSpeed = 2;
 

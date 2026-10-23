@@ -13,6 +13,7 @@ extern const float deg;
 extern const float FOV;
 extern const int tileSize;
 extern int rays;
+extern int rows;
 extern float px, py, pa;
 extern int portal9X, portal9Y;
 extern int portal8X, portal8Y;

@@ -130,6 +130,9 @@ static int pixelsWidth = 0;
 static int pixelsHeight = 0;
 
 void renderFloorAndCeiling(SDL_Renderer *renderer) {
+
+  int rowHeight = fmax((int)(windowHeight / rows), 1);
+
   if (pixelsWidth != windowWidth || pixelsHeight != windowHeight) {
     if (pixels) {
       free(pixels);
@@ -151,7 +154,7 @@ void renderFloorAndCeiling(SDL_Renderer *renderer) {
     pixelsHeight = windowHeight;
   }
 
-  for (int y = 0; y < windowHeight; y++) {
+  for (int y = 0; y < windowHeight; y += rowHeight) {
     float dirX = cosf(pa);
     float dirY = sinf(pa);
 
@@ -185,40 +188,43 @@ void renderFloorAndCeiling(SDL_Renderer *renderer) {
     if (shade <= 0.0f)
       continue;
 
-    for (int x = 0; x < windowWidth; ++x) {
+    for (int x = 0; x < windowWidth; x += rowHeight) {
       int cellX = (int)(floorX);
       int cellY = (int)(floorY);
 
       int tx = (int)(textureSize * (floorX - cellX)) & (textureSize - 1);
       int ty = (int)(textureSize * (floorY - cellY)) & (textureSize - 1);
 
-      floorX += floorStepX;
-      floorY += floorStepY;
+      floorX += floorStepX * rowHeight;
+      floorY += floorStepY * rowHeight;
 
-      int floorTexture = 3;
-      int ceilingTexture = 6;
-
-      uint32_t r, g, b, a = 255;
+      uint32_t r, g, b, a;
 
       if (y > windowHeight / 2) {
         int color = floorTextureColors[ty][tx];
         if (color == 1) {
-          r = 152 * shade, g = 130 * shade, b = 76 * shade;
+          r = 152, g = 130, b = 76, a = 255 * shade;
         } else if (color == 2) {
-          r = 136 * shade, g = 114 * shade, b = 64 * shade;
+          r = 136, g = 114, b = 64, a = 255 * shade;
         } else if (color == 3) {
-          r = 168 * shade, g = 144 * shade, b = 84 * shade;
+          r = 168, g = 144, b = 84, a = 255 * shade;
         }
       } else {
         int color = ceilingTextureColors[ty][tx];
         if (color == 1) {
-          r = 212 * shade, g = 210 * shade, b = 140 * shade;
+          r = 212, g = 210, b = 140, a = 255 * shade;
         } else if (color == 2) {
-          r = 196 * shade, g = 194 * shade, b = 132 * shade;
+          r = 196, g = 194, b = 132, a = 255 * shade;
         }
       }
 
-      pixels[y * windowWidth + x] = ((r << 24) | (g << 16) | (b << 8) | a);
+      for (int y1 = 0; y1 < rowHeight; y1++) {
+        for (int x1 = 0; x1 < rowHeight; x1++) {
+          if (y + y1 < windowHeight && x + x1 < windowWidth)
+            pixels[(y + y1) * windowWidth + (x + x1)] =
+                ((r << 24) | (g << 16) | (b << 8) | a);
+        }
+      }
     }
   }
 
