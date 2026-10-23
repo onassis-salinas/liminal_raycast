@@ -19,6 +19,8 @@ extern int windowWidth, windowHeight;
 extern float dt;
 extern int map[mapHeight][mapWidth];
 extern int wallTextureColors[textureSize][textureSize];
+extern int ceilingTextureColors[textureSize][textureSize];
+extern int floorTextureColors[textureSize][textureSize];
 extern void loadTextures(SDL_Renderer *renderer);
 extern SDL_Texture *wallTexture;
 
@@ -26,6 +28,7 @@ int getMapTile(int x, int y);
 bool isWall(int tile);
 void initPortalPositions(void);
 void renderWalls(SDL_Renderer *renderer);
+void renderFloorAndCeiling(SDL_Renderer *renderer);
 void renderGame(SDL_Renderer *renderer);
 
 #endif

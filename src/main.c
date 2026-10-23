@@ -8,7 +8,6 @@
 // Moving camera up and down when walking
 // Render floor
 // Render roof
-// Render textures on walls
 // Improve map
 // Add shaders for visual effects
 // Improve fov and window resizing

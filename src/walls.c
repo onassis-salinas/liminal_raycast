@@ -1,6 +1,7 @@
 #include "game.h"
 #include <SDL3/SDL_render.h>
 #include <math.h>
+#include <stdio.h>
 
 void renderWalls(SDL_Renderer *renderer) {
   for (int i = -(rays / 2); i < (rays / 2); i++) {
@@ -118,5 +119,79 @@ void renderWalls(SDL_Renderer *renderer) {
     SDL_FRect source = {texX, 0, 1, 64};
     SDL_SetTextureColorModFloat(wallTexture, shade, shade, shade);
     SDL_RenderTexture(renderer, wallTexture, &source, &destination);
+  }
+}
+
+void renderFloorAndCeiling(SDL_Renderer *renderer) {
+  for (int y = 0; y < windowHeight; y++) {
+    float dirX = cosf(pa);
+    float dirY = sinf(pa);
+
+    float halfFov = (rays / 2.0f) * (deg / 10.0f);
+    float planeScale = tanf(halfFov);
+    float planeX = -dirY * planeScale;
+    float planeY = dirX * planeScale;
+
+    float rayDirX0 = dirX - planeX;
+    float rayDirY0 = dirY - planeY;
+    float rayDirX1 = dirX + planeX;
+    float rayDirY1 = dirY + planeY;
+
+    int p;
+    if (y > windowHeight / 2) {
+      p = y - windowHeight / 2;
+    } else {
+      p = windowHeight / 2 - y;
+    }
+
+    float posZ = 0.5 * windowHeight;
+    float rowDistance = 30.0f * windowHeight / (2.0f * p * tileSize);
+
+    float floorStepX = rowDistance * (rayDirX1 - rayDirX0) / windowWidth;
+    float floorStepY = rowDistance * (rayDirY1 - rayDirY0) / windowWidth;
+
+    float floorX = (px / tileSize) + rowDistance * rayDirX0;
+    float floorY = (py / tileSize) + rowDistance * rayDirY0;
+
+    float shade = 1.0f - fminf(rowDistance / 12.0f, 1.0f);
+    if (shade <= 0.0f)
+      continue;
+
+    for (int x = 0; x < windowWidth; ++x) {
+      int cellX = (int)(floorX);
+      int cellY = (int)(floorY);
+
+      int tx = (int)(textureSize * (floorX - cellX)) & (textureSize - 1);
+      int ty = (int)(textureSize * (floorY - cellY)) & (textureSize - 1);
+
+      floorX += floorStepX;
+      floorY += floorStepY;
+
+      int floorTexture = 3;
+      int ceilingTexture = 6;
+
+      int r, g, b;
+
+      if (y > windowHeight / 2) {
+        int color = floorTextureColors[ty][tx];
+        if (color == 1) {
+          r = 148 * shade, g = 138 * shade, b = 78 * shade;
+        } else if (color == 2) {
+          r = 132 * shade, g = 122 * shade, b = 66 * shade;
+        } else if (color == 3) {
+          r = 164 * shade, g = 152 * shade, b = 86 * shade;
+        }
+      } else {
+        int color = ceilingTextureColors[ty][tx];
+        if (color == 1) {
+          r = 209 * shade, g = 208 * shade, b = 114 * shade;
+        } else if (color == 2) {
+          r = 192 * shade, g = 191 * shade, b = 107 * shade;
+        }
+      }
+
+      SDL_SetRenderDrawColor(renderer, r, g, b, 255);
+      SDL_RenderPoint(renderer, x, y);
+    }
   }
 }

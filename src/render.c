@@ -48,37 +48,6 @@ void initPortalPositions() {
 
 bool isWall(int tile) { return tile == 1 || tile == 2; }
 
-void renderMap(SDL_Renderer *renderer) {
-  int xo, yo;
-
-  for (int y = 0; y < mapHeight; y++) {
-    for (int x = 0; x < mapWidth; x++) {
-      int tileType = getMapTile(x, y);
-      int red, green, blue;
-      if (tileType == 1) {
-        red = 100, green = 100, blue = 100;
-      } else if (tileType == 2) {
-        red = 50, green = 30, blue = 40;
-      } else {
-        red = 5, green = 5, blue = 5;
-      }
-
-      xo = x * tileSize;
-      yo = y * tileSize;
-
-      SDL_SetRenderDrawColor(renderer, red, green, blue, 255);
-      SDL_FRect rect = {xo, yo, tileSize, tileSize};
-      SDL_RenderFillRect(renderer, &rect);
-    }
-  }
-}
-
-void renderPlayer(SDL_Renderer *renderer) {
-  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-  SDL_FRect rect = {px - 5, py - 5, 10, 10};
-  SDL_RenderFillRect(renderer, &rect);
-}
-
 void calculatePlayerCollisions(float nextX, float nextY) {
   int nextXTile = getMapTile((int)(nextX / tileSize), (int)(py / tileSize));
   int nextYTile = getMapTile((int)(px / tileSize), (int)(nextY / tileSize));
@@ -142,21 +111,8 @@ void movePlayer() {
     pa -= +2 * PI;
 }
 
-void renderBackground(SDL_Renderer *renderer) {
-  int halfHeight = windowHeight / 2;
-  SDL_SetRenderDrawColor(renderer, 255, 255, 240, 255);
-  SDL_FRect rect1 = {0, 0, windowWidth, halfHeight};
-  SDL_RenderFillRect(renderer, &rect1);
-
-  SDL_SetRenderDrawColor(renderer, 120, 103, 31, 255);
-  SDL_FRect rect2 = {0, halfHeight, windowWidth, windowHeight};
-  SDL_RenderFillRect(renderer, &rect2);
-}
-
 void renderGame(SDL_Renderer *renderer) {
   movePlayer();
-  renderBackground(renderer);
-  // renderMap(renderer);
+  renderFloorAndCeiling(renderer);
   renderWalls(renderer);
-  // renderPlayer(renderer);
 }
