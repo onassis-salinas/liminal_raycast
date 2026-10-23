@@ -53,7 +53,7 @@ bool isWall(int tile) { return tile == 1 || tile == 2; }
 void calculatePlayerCollisions(float nextX, float nextY) {
   int nextXTile = getMapTile((int)(nextX / tileSize), (int)(py / tileSize));
   int nextYTile = getMapTile((int)(px / tileSize), (int)(nextY / tileSize));
-  int nextTile = getMapTile((int)(px / tileSize), (int)(py / tileSize));
+  int nextTile = getMapTile((int)(nextX / tileSize), (int)(nextY / tileSize));
 
   if (!isWall(nextXTile)) {
     px = nextX;
