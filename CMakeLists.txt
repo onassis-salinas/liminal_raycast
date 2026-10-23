@@ -11,6 +11,7 @@ if(EMSCRIPTEN)
   target_compile_options(game PRIVATE "SHELL:-sUSE_SDL=3")
   target_link_options(game PRIVATE
     "SHELL:-sUSE_SDL=3"
+    "SHELL:-sALLOW_MEMORY_GROWTH=1"
     "SHELL:--shell-file=${CMAKE_SOURCE_DIR}/src/shell.html"
   )
 else()
