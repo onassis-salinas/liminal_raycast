@@ -233,18 +233,18 @@ void renderFloorAndCeiling(SDL_Renderer *renderer) {
       if (y > windowHeight / 2) {
         int color = floorTextureColors[ty][tx];
         if (color == 1) {
-          r = 152, g = 130, b = 76, a = 255 * shade;
+          r = 130, g = 111, b = 65, a = 255 * shade;
         } else if (color == 2) {
-          r = 136, g = 114, b = 64, a = 255 * shade;
+          r = 116, g = 98, b = 55, a = 255 * shade;
         } else if (color == 3) {
-          r = 168, g = 144, b = 84, a = 255 * shade;
+          r = 143, g = 124, b = 72, a = 255 * shade;
         }
       } else {
         int color = ceilingTextureColors[ty][tx];
         if (color == 1) {
-          r = 212, g = 210, b = 140, a = 255 * shade;
+          r = 181, g = 180, b = 120, a = 255 * shade;
         } else if (color == 2) {
-          r = 196, g = 194, b = 132, a = 255 * shade;
+          r = 167, g = 166, b = 113, a = 255 * shade;
         }
       }
 
