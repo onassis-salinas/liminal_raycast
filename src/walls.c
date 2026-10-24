@@ -4,6 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void checkXCollision() {}
+
+void checkYCollision() {}
+
 void renderWalls(SDL_Renderer *renderer) {
   for (int i = -(rays / 2); i < (rays / 2); i++) {
     float angle = pa + (i * (FOV / rays));
@@ -22,76 +26,102 @@ void renderWalls(SDL_Renderer *renderer) {
     float size1 = 0;
     float size2 = 0;
 
-    for (int j = 0; j < 25; j++) {
-      prevX = x1;
-      prevY = y1;
+    int maxDepth = 5;
+    int horizontalTile;
 
-      if (angle > PI / 2 && angle < 1.5 * PI) {
-        x1 = ((int)(x1 / tileSize)) * tileSize - 0.0003f;
-      } else {
-        x1 = ((int)(x1 / tileSize)) * tileSize + tileSize;
-      }
-      y1 = (tan(angle) * (x1 - prevX)) + prevY;
-      int tile = getMapTile((int)(x1 / tileSize), (int)(y1 / tileSize));
-
-      size1 += sqrt(pow(x1 - prevX, 2) + pow(y1 - prevY, 2)) * cos(angle - pa);
-
-      if (isWall(tile)) {
-        color1 = tile;
-        break;
-      } else if (tile == 8) {
-        float offset = y1 - (int)(y1 / tileSize) * tileSize;
-        float newX = (portal9X * tileSize) + tileSize;
-        float newY = (portal9Y * tileSize) + offset;
-
-        x1 = newX, y1 = newY;
-        x2 = newX, y2 = newY;
-
-        size2 = size1;
-      } else if (tile == 9) {
-        float offset = y1 - (int)(y1 / tileSize) * tileSize;
-        float newX = (portal8X * tileSize);
-        float newY = (portal8Y * tileSize) + offset;
-
-        x1 = newX, y1 = newY;
-        x2 = newX, y2 = newY;
-
-        size2 = size1;
-      } else if (j == 14) {
-        color1 = 99;
-      }
-    }
-
-    float rayTan = tanf(angle);
-    if (fabsf(rayTan) > 0.0001f) {
+    for (int try = 0; try < maxDepth; try++) {
       for (int j = 0; j < 25; j++) {
-        prevX = x2;
-        prevY = y2;
+        prevX = x1;
+        prevY = y1;
 
-        if (angle > PI && angle < 2 * PI) {
-          y2 = ((int)(y2 / tileSize)) * tileSize - 0.0003f;
+        if (angle > PI / 2 && angle < 1.5 * PI) {
+          x1 = ((int)(x1 / tileSize)) * tileSize - 0.0003f;
         } else {
-          y2 = ((int)(y2 / tileSize)) * tileSize + tileSize;
+          x1 = ((int)(x1 / tileSize)) * tileSize + tileSize;
         }
-        x2 = (y2 - prevY) / rayTan + prevX;
+        y1 = (tan(angle) * (x1 - prevX)) + prevY;
+        horizontalTile = getMapTile((int)(x1 / tileSize), (int)(y1 / tileSize));
 
-        int tileX = (int)(x2 / tileSize), tileY = (int)(y2 / tileSize);
-        int tile = getMapTile(tileX, tileY);
-        int tileUp = getMapTile(tileX, tileY - 1);
-        int tileDown = getMapTile(tileX, tileY + 1);
+        size1 +=
+            sqrt(pow(x1 - prevX, 2) + pow(y1 - prevY, 2)) * cos(angle - pa);
 
-        size2 +=
-            sqrt(pow(x2 - prevX, 2) + pow(y2 - prevY, 2)) * cos(angle - pa);
-
-        if (isWall(tile)) {
-          color2 = tile;
+        if (horizontalTile > 0) {
+          color1 = horizontalTile;
           break;
+        } else if (horizontalTile == 8) {
+          float offset = y1 - (int)(y1 / tileSize) * tileSize;
+          float newX = (portal9X * tileSize) + tileSize;
+          float newY = (portal9Y * tileSize) + offset;
+
+          x1 = newX, y1 = newY;
+          x2 = newX, y2 = newY;
+
+          size2 = size1;
+        } else if (horizontalTile == 9) {
+          float offset = y1 - (int)(y1 / tileSize) * tileSize;
+          float newX = (portal8X * tileSize);
+          float newY = (portal8Y * tileSize) + offset;
+
+          x1 = newX, y1 = newY;
+          x2 = newX, y2 = newY;
+
+          size2 = size1;
         } else if (j == 14) {
-          color2 = 99;
+          color1 = 99;
         }
       }
-    } else {
-      size2 = INFINITY;
+
+      float rayTan = tanf(angle);
+      if (fabsf(rayTan) > 0.0001f) {
+        for (int j = 0; j < 25; j++) {
+          prevX = x2;
+          prevY = y2;
+
+          if (angle > PI && angle < 2 * PI) {
+            y2 = ((int)(y2 / tileSize)) * tileSize - 0.0003f;
+          } else {
+            y2 = ((int)(y2 / tileSize)) * tileSize + tileSize;
+          }
+          x2 = (y2 - prevY) / rayTan + prevX;
+
+          int tileX = (int)(x2 / tileSize), tileY = (int)(y2 / tileSize);
+          int tile = getMapTile(tileX, tileY);
+          int tileUp = getMapTile(tileX, tileY - 1);
+          int tileDown = getMapTile(tileX, tileY + 1);
+
+          size2 +=
+              sqrt(pow(x2 - prevX, 2) + pow(y2 - prevY, 2)) * cos(angle - pa);
+
+          if (tile > 0) {
+            color2 = tile;
+            break;
+          } else if (j == 14) {
+            color2 = 99;
+          }
+        }
+      } else {
+        size2 = INFINITY;
+      }
+
+      if (size1 < size2 && horizontalTile > 7) {
+        float offset = y1 - (int)(y1 / tileSize) * tileSize;
+        float newX, newY;
+
+        if (horizontalTile == 8) {
+          newX = (portal9X * tileSize) + tileSize;
+          newY = (portal9Y * tileSize) + offset;
+        } else if (horizontalTile == 9) {
+          newX = (portal8X * tileSize);
+          newY = (portal8Y * tileSize) + offset;
+        }
+
+        x1 = newX, y1 = newY;
+        x2 = newX, y2 = newY;
+
+        size2 = size1;
+      } else {
+        break;
+      }
     }
 
     float wallHeight;
