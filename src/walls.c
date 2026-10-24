@@ -1,7 +1,6 @@
 #include "game.h"
 #include <SDL3/SDL_render.h>
 #include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 void checkXCollision() {}

@@ -7,7 +7,11 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 add_executable(game WIN32 src/main.c src/render.c src/walls.c src/maps.c src/textures.c)
 
 if(EMSCRIPTEN)
-  set_target_properties(game PROPERTIES SUFFIX ".html")
+  set_target_properties(game PROPERTIES
+    OUTPUT_NAME "index"
+    SUFFIX ".html"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/dist"
+  )
   target_compile_options(game PRIVATE -O3 "SHELL:-sUSE_SDL=3")
   target_link_options(game PRIVATE
     -O3

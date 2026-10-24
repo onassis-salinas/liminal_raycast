@@ -1,6 +1,5 @@
 #include "game.h"
 #include <SDL3/SDL_events.h>
-#include <stdio.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -42,7 +41,7 @@ static void drawFrame() {
   accum += dt;
   frames++;
   if (accum >= 1.0f) {
-    printf("fps: %d\n", frames);
+    // printf("fps: %d\n", frames);
     frames = 0;
     accum -= 1.0f;
   }
