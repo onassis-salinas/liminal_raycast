@@ -47,19 +47,19 @@ void renderWalls(SDL_Renderer *renderer) {
         if (horizontalTile > 0) {
           color1 = horizontalTile;
           break;
-        } else if (horizontalTile == 8) {
+        } else if (horizontalTile == 52) {
           float offset = y1 - (int)(y1 / tileSize) * tileSize;
-          float newX = (portal9X * tileSize) + tileSize;
-          float newY = (portal9Y * tileSize) + offset;
+          float newX = (portal51X * tileSize) + tileSize;
+          float newY = (portal51Y * tileSize) + offset;
 
           x1 = newX, y1 = newY;
           x2 = newX, y2 = newY;
 
           size2 = size1;
-        } else if (horizontalTile == 9) {
+        } else if (horizontalTile == 51) {
           float offset = y1 - (int)(y1 / tileSize) * tileSize;
-          float newX = (portal8X * tileSize);
-          float newY = (portal8Y * tileSize) + offset;
+          float newX = (portal52X * tileSize);
+          float newY = (portal52Y * tileSize) + offset;
 
           x1 = newX, y1 = newY;
           x2 = newX, y2 = newY;
@@ -102,16 +102,16 @@ void renderWalls(SDL_Renderer *renderer) {
         size2 = INFINITY;
       }
 
-      if (size1 < size2 && horizontalTile > 7) {
+      if (size1 < size2 && horizontalTile > 50) {
         float offset = y1 - (int)(y1 / tileSize) * tileSize;
         float newX, newY;
 
-        if (horizontalTile == 8) {
-          newX = (portal9X * tileSize) + tileSize;
-          newY = (portal9Y * tileSize) + offset;
-        } else if (horizontalTile == 9) {
-          newX = (portal8X * tileSize);
-          newY = (portal8Y * tileSize) + offset;
+        if (horizontalTile == 52) {
+          newX = (portal51X * tileSize) + tileSize;
+          newY = (portal51Y * tileSize) + offset;
+        } else if (horizontalTile == 51) {
+          newX = (portal52X * tileSize);
+          newY = (portal52Y * tileSize) + offset;
         }
 
         x1 = newX, y1 = newY;

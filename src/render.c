@@ -11,9 +11,9 @@ int rows = 180;
 float baseSpeed = 80;
 float baseRotationSpeed = 2;
 
-float px = tileSize * 1.5, py = tileSize * 1.5, pa = 0;
+float px = tileSize * 8.5, py = tileSize * 1.5, pa = 0;
 
-int portal8X, portal8Y, portal9X, portal9Y;
+int portal52X, portal52Y, portal51X, portal51Y;
 
 int getMapTile(int x, int y) {
 
@@ -36,13 +36,13 @@ int getMapTile(int x, int y) {
 void initPortalPositions() {
   for (int y = 0; y < mapHeight; y++) {
     for (int x = 0; x < mapWidth; x++) {
-      if (getMapTile(x, y) == 8) {
-        portal8X = x;
-        portal8Y = y;
+      if (getMapTile(x, y) == 52) {
+        portal52X = x;
+        portal52Y = y;
       }
-      if (getMapTile(x, y) == 9) {
-        portal9X = x;
-        portal9Y = y;
+      if (getMapTile(x, y) == 51) {
+        portal51X = x;
+        portal51Y = y;
       }
     }
   }
@@ -63,12 +63,12 @@ void calculatePlayerCollisions(float nextX, float nextY) {
     py = nextY;
   }
 
-  if (nextTile == 8) {
-    px = (portal9X * tileSize + tileSize) + fmod(px, tileSize);
-    py = (portal9Y * tileSize) + fmod(py, tileSize);
-  } else if (nextTile == 9) {
-    px = (portal8X * tileSize - tileSize) + fmod(px, tileSize);
-    py = (portal8Y * tileSize) + fmod(py, tileSize);
+  if (nextTile == 52) {
+    px = (portal51X * tileSize + tileSize) + fmod(px, tileSize);
+    py = (portal51Y * tileSize) + fmod(py, tileSize);
+  } else if (nextTile == 51) {
+    px = (portal52X * tileSize - tileSize) + fmod(px, tileSize);
+    py = (portal52Y * tileSize) + fmod(py, tileSize);
   }
 }
 
