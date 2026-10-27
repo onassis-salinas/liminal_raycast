@@ -11,7 +11,7 @@ int rows = 180;
 float baseSpeed = 80;
 float baseRotationSpeed = 2;
 
-float px = tileSize * 8.5, py = tileSize * 1.5, pa = 0;
+float px = tileSize * 15.5, py = tileSize * 2.5, pa = 0;
 
 int portal52X, portal52Y, portal51X, portal51Y;
 
